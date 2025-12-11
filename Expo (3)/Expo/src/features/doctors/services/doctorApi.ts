@@ -265,14 +265,31 @@ export const doctorApi = {
   getDoctorById: async (id: string): Promise<Doctor | null> => {
     try {
       // REAL API
+      console.log('API Call: Getting doctor by ID:', id);
+      console.log('API Endpoint:', ENDPOINTS.DOCTORS.DETAIL(id));
+      
       const response = await httpClient.get<ApiResponse<DoctorBackendDto>>(
         ENDPOINTS.DOCTORS.DETAIL(id)
       );
-      return mapBackendDoctorToDoctor(response.data);
-    } catch (error) {
+      
+      console.log('API Response:', JSON.stringify(response, null, 2));
+      
+      const mappedDoctor = mapBackendDoctorToDoctor(response.data);
+      console.log('Mapped Doctor:', JSON.stringify(mappedDoctor, null, 2));
+      
+      return mappedDoctor;
+    } catch (error: any) {
       console.error('Error fetching doctor by ID:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      
       // Fallback to dummy data
-      return DUMMY_DOCTORS.find(doc => doc.id === id) || null;
+      const dummyDoctor = DUMMY_DOCTORS.find(doc => doc.id === id);
+      console.log('Falling back to dummy doctor:', dummyDoctor?.name || 'Not found');
+      return dummyDoctor || null;
     }
   },
 

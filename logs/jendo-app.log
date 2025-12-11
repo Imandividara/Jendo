@@ -540,3 +540,88 @@ Identify and stop the process that's listening on port 5000 or configure this ap
 2025-12-09 15:54:21.869 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-5000"]
 2025-12-09 15:54:21.883 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 5000 (http) with context path ''
 2025-12-09 15:54:21.889 [main] INFO  com.jendo.app.Application - Started Application in 5.327 seconds (process running for 6.038)
+2025-12-09 17:27:47.708 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
+2025-12-09 17:27:47.753 [main] INFO  com.jendo.app.Application - Starting Application using Java 23.0.1 with PID 9328 (D:\Jendo-frontend\jendo_project\Jendo-Backend\Jendo-Backend\target\classes started by HP in D:\Jendo-frontend\jendo_project)
+2025-12-09 17:27:47.754 [main] DEBUG com.jendo.app.Application - Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-12-09 17:27:47.755 [main] INFO  com.jendo.app.Application - No active profile set, falling back to 1 default profile: "default"
+2025-12-09 17:27:48.570 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-09 17:27:48.647 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 72 ms. Found 16 JPA repository interfaces.
+2025-12-09 17:27:49.041 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 5000 (http)
+2025-12-09 17:27:49.047 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-5000"]
+2025-12-09 17:27:49.049 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-12-09 17:27:49.049 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-09 17:27:49.092 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-12-09 17:27:49.092 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1282 ms
+2025-12-09 17:27:49.201 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-09 17:27:49.241 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-12-09 17:27:49.269 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-12-09 17:27:49.445 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-09 17:27:49.462 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-12-09 17:27:49.612 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@717a8a76
+2025-12-09 17:27:49.613 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-12-09 17:27:50.591 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-09 17:27:50.947 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-09 17:27:52.092 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-5000"]
+2025-12-09 17:27:52.109 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 5000 (http) with context path ''
+2025-12-09 17:27:52.117 [main] INFO  com.jendo.app.Application - Started Application in 5.046 seconds (process running for 5.928)
+2025-12-09 17:28:49.685 [http-nio-5000-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-09 17:28:49.685 [http-nio-5000-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-12-09 17:28:49.687 [http-nio-5000-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-12-09 17:28:49.712 [http-nio-5000-exec-1] INFO  c.j.a.d.d.service.DoctorServiceImpl - Fetching all doctors - page: 0, size: 20
+2025-12-09 17:28:49.781 [http-nio-5000-exec-1] DEBUG org.hibernate.SQL - 
+    select
+        d1_0.id,
+        d1_0.address,
+        d1_0.available_days,
+        d1_0.email,
+        d1_0.hospital,
+        d1_0.image_url,
+        d1_0.is_available,
+        d1_0.name,
+        d1_0.phone,
+        d1_0.qualifications,
+        d1_0.specialty 
+    from
+        doctors d1_0 
+    order by
+        d1_0.name 
+    offset
+        ? rows 
+    fetch
+        first ? rows only
+2025-12-09 17:28:49.802 [http-nio-5000-exec-1] DEBUG org.hibernate.SQL - 
+    select
+        cf1_0.doctor_id,
+        cf1_0.id,
+        cf1_0.amount,
+        cf1_0.currency,
+        cf1_0.fee_type 
+    from
+        consultation_fees cf1_0 
+    where
+        cf1_0.doctor_id=?
+2025-12-09 17:28:49.807 [http-nio-5000-exec-1] DEBUG org.hibernate.SQL - 
+    select
+        cf1_0.doctor_id,
+        cf1_0.id,
+        cf1_0.amount,
+        cf1_0.currency,
+        cf1_0.fee_type 
+    from
+        consultation_fees cf1_0 
+    where
+        cf1_0.doctor_id=?
+2025-12-09 17:28:49.807 [http-nio-5000-exec-1] DEBUG org.hibernate.SQL - 
+    select
+        cf1_0.doctor_id,
+        cf1_0.id,
+        cf1_0.amount,
+        cf1_0.currency,
+        cf1_0.fee_type 
+    from
+        consultation_fees cf1_0 
+    where
+        cf1_0.doctor_id=?
+2025-12-09 17:30:37.933 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-12-09 17:30:37.935 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-12-09 17:30:37.937 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

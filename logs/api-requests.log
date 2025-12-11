@@ -16,3 +16,5 @@
 2025-12-09 15:14:20.985 [http-nio-5000-exec-1] INFO  c.j.a.c.RequestLoggingInterceptor - API Response - Method: GET | URI: /api/doctors | Status: 200 | Time: 21ms
 2025-12-09 15:47:00.273 [http-nio-5000-exec-4] INFO  c.j.a.c.RequestLoggingInterceptor - API Request - Method: GET | URI: /api/doctors | Client IP: 192.168.56.1 | User-Agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36
 2025-12-09 15:47:00.443 [http-nio-5000-exec-4] INFO  c.j.a.c.RequestLoggingInterceptor - API Response - Method: GET | URI: /api/doctors | Status: 200 | Time: 171ms
+2025-12-09 17:28:49.696 [http-nio-5000-exec-1] INFO  c.j.a.c.RequestLoggingInterceptor - API Request - Method: GET | URI: /api/doctors | Client IP: 192.168.8.137 | User-Agent: okhttp/4.12.0
+2025-12-09 17:28:49.855 [http-nio-5000-exec-1] INFO  c.j.a.c.RequestLoggingInterceptor - API Response - Method: GET | URI: /api/doctors | Status: 200 | Time: 159ms

@@ -56,16 +56,43 @@ export const DoctorsScreen: React.FC = () => {
         doc.specialty.toLowerCase() === activeSpecialty.toLowerCase()
       );
 
+  const getInitials = (name: string) => {
+    const parts = name.split(' ').filter(part => part.length > 0);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   const renderDoctor = ({ item }: { item: DoctorSummary }) => (
     <TouchableOpacity
       style={styles.doctorCard}
       onPress={() => router.push(`/doctors/${item.id}`)}
       activeOpacity={0.7}
     >
-      <Image 
-        source={{ uri: item.imageUrl || 'https://randomuser.me/api/portraits/lego/1.jpg' }} 
-        style={styles.doctorImage} 
-      />
+      {item.imageUrl ? (
+        <Image 
+          source={{ uri: item.imageUrl }} 
+          style={styles.doctorImage}
+        />
+      ) : (
+        <View style={{ 
+          width: 70, 
+          height: 70, 
+          borderRadius: 12, 
+          backgroundColor: '#8B5CF6',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Text style={{ 
+            color: '#FFFFFF', 
+            fontSize: 24, 
+            fontWeight: '700' 
+          }}>
+            {getInitials(item.name)}
+          </Text>
+        </View>
+      )}
       <View style={styles.doctorInfo}>
         <Text style={styles.doctorName}>{item.name}</Text>
         <Text style={styles.specialty}>
