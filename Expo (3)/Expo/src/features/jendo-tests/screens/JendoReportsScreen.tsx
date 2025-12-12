@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Image, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { EmptyState } from '../../../common/components/ui';
 import { COLORS } from '../../../config/theme.config';
-import { JendoTestSummary, RiskLevel } from '../../../types/models';
+import { jendoTestApi, JendoTest } from '../services/jendoTestApi';
 import { jendoStyles as styles } from '../components';
 
-const DUMMY_TESTS: JendoTestSummary[] = [
-  { id: 'test-001', testDate: '2024-11-28T09:00:00Z', riskLevel: 'low', score: 85 },
-  { id: 'test-002', testDate: '2024-11-15T14:30:00Z', riskLevel: 'low', score: 78 },
-  { id: 'test-003', testDate: '2024-10-20T11:15:00Z', riskLevel: 'moderate', score: 72 },
-  { id: 'test-004', testDate: '2024-09-18T10:00:00Z', riskLevel: 'moderate', score: 68 },
-  { id: 'test-005', testDate: '2024-08-15T15:45:00Z', riskLevel: 'low', score: 82 },
-];
+type RiskLevel = 'low' | 'moderate' | 'high';
+
+interface JendoTestSummary {
+  id: string;
+  testDate: string;
+  riskLevel: RiskLevel;
+  score: number;
+}
 
 const getRiskColor = (level: RiskLevel) => {
   switch (level) {
@@ -51,8 +52,34 @@ const formatDate = (dateString: string) => {
 export const JendoReportsScreen: React.FC = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [tests, setTests] = useState<JendoTest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredTests = DUMMY_TESTS.filter(test => {
+  useEffect(() => {
+    loadTests();
+  }, []);
+
+  const loadTests = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch all Jendo tests (no user filtering)
+      console.log('Fetching all Jendo tests...');
+      const response = await jendoTestApi.getAllTests();
+      console.log('Received tests:', response);
+      
+      setTests(response);
+    } catch (err: any) {
+      console.error('Error loading Jendo tests:', err);
+      setError(err.message || 'Failed to load tests');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredTests = tests.filter(test => {
     if (searchQuery) {
       const dateStr = new Date(test.testDate).toLocaleDateString();
       return dateStr.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -61,7 +88,7 @@ export const JendoReportsScreen: React.FC = () => {
     return true;
   });
 
-  const renderTestItem = ({ item }: { item: JendoTestSummary }) => (
+  const renderTestItem = ({ item }: { item: JendoTest }) => (
     <TouchableOpacity
       onPress={() => router.push(`/jendo-reports/${item.id}`)}
       activeOpacity={0.7}
@@ -113,20 +140,36 @@ export const JendoReportsScreen: React.FC = () => {
         </View>
       </View>
 
-      <FlatList
-        data={filteredTests}
-        renderItem={renderTestItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <EmptyState
-            icon="document-text-outline"
-            title="No Reports Found"
-            description="No test reports match your search criteria."
-          />
-        }
-      />
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading your Jendo tests...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color={COLORS.error} />
+          <Text style={styles.errorTitle}>Error Loading Tests</Text>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadTests}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredTests}
+          renderItem={renderTestItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <EmptyState
+              icon="document-text-outline"
+              title="No Reports Found"
+              description={tests.length === 0 ? "You haven't taken any Jendo tests yet." : "No test reports match your search criteria."}
+            />
+          }
+        />
+      )}
     </ScreenWrapper>
   );
 };

@@ -1,145 +1,239 @@
-import { JendoTest, JendoTestSummary, RiskLevel } from '../../../types/models';
 import { httpClient } from '../../../infrastructure/api';
 import { ENDPOINTS } from '../../../config/api.config';
 
-const DUMMY_JENDO_TESTS: JendoTest[] = [
-  {
-    id: 'test-001',
-    userId: 'user-001',
-    testDate: '2024-11-15T09:00:00Z',
-    riskLevel: 'low',
-    score: 85,
-    heartRate: 72,
-    bloodPressureSystolic: 120,
-    bloodPressureDiastolic: 80,
-    analysis: 'Your cardiovascular health is in excellent condition. Heart rhythm is normal and blood pressure is within healthy range.',
-    suggestions: ['Continue regular exercise routine', 'Maintain balanced diet', 'Keep stress levels managed', 'Schedule next test in 3 months'],
-    createdAt: '2024-11-15T09:00:00Z',
-  },
-  {
-    id: 'test-002',
-    userId: 'user-001',
-    testDate: '2024-10-20T14:30:00Z',
-    riskLevel: 'low',
-    score: 78,
-    heartRate: 75,
-    bloodPressureSystolic: 125,
-    bloodPressureDiastolic: 82,
-    analysis: 'Good cardiovascular health with minor areas for improvement.',
-    suggestions: ['Consider reducing sodium intake', 'Increase aerobic exercise', 'Monitor blood pressure regularly'],
-    createdAt: '2024-10-20T14:30:00Z',
-  },
-  {
-    id: 'test-003',
-    userId: 'user-001',
-    testDate: '2024-09-18T11:15:00Z',
-    riskLevel: 'moderate',
-    score: 72,
-    heartRate: 82,
-    bloodPressureSystolic: 135,
-    bloodPressureDiastolic: 88,
-    analysis: 'Moderate cardiovascular risk detected. Blood pressure is elevated.',
-    suggestions: ['Reduce caffeine and alcohol', 'Implement stress management', 'Consider consulting with a cardiologist'],
-    createdAt: '2024-09-18T11:15:00Z',
-  },
-  {
-    id: 'test-004',
-    userId: 'user-001',
-    testDate: '2024-08-15T10:00:00Z',
-    riskLevel: 'moderate',
-    score: 68,
-    heartRate: 85,
-    bloodPressureSystolic: 140,
-    bloodPressureDiastolic: 90,
-    analysis: 'Elevated cardiovascular risk indicators.',
-    suggestions: ['Schedule appointment with healthcare provider', 'Begin daily blood pressure monitoring'],
-    createdAt: '2024-08-15T10:00:00Z',
-  },
-  {
-    id: 'test-005',
-    userId: 'user-001',
-    testDate: '2024-07-10T15:45:00Z',
-    riskLevel: 'low',
-    score: 75,
-    heartRate: 70,
-    bloodPressureSystolic: 118,
-    bloodPressureDiastolic: 78,
-    analysis: 'Healthy cardiovascular profile. All indicators within normal ranges.',
-    suggestions: ['Maintain current exercise routine', 'Continue healthy eating habits'],
-    createdAt: '2024-07-10T15:45:00Z',
-  },
-];
+// Backend DTO types
+export interface JendoTestRequestDto {
+  userId: number;
+  score?: number;
+  heartRate?: number;
+  riskLevel?: string;
+  testTime?: string; // HH:mm:ss
+  bloodPressure?: string; // "120/80"
+  testDate?: string; // YYYY-MM-DD
+}
+
+export interface JendoTestResponseDto {
+  id: number;
+  userId: number;
+  userName: string;
+  score: number;
+  heartRate: number;
+  riskLevel: string; // "LOW", "MODERATE", "HIGH"
+  testTime: string; // HH:mm:ss
+  bloodPressure: string; // "120/80"
+  testDate: string; // YYYY-MM-DD
+  createdAt: string; // ISO timestamp
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+  timestamp: string;
+  path?: string;
+}
+
+interface PaginationResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
+// Frontend Jendo test model
+export interface JendoTest {
+  id: string;
+  userId: string;
+  userName: string;
+  testDate: string;
+  testTime: string;
+  riskLevel: 'low' | 'moderate' | 'high';
+  score: number;
+  heartRate: number;
+  bloodPressure: string;
+  bloodPressureSystolic: number;
+  bloodPressureDiastolic: number;
+  createdAt: string;
+}
+
+export interface JendoTestSummary {
+  id: string;
+  testDate: string;
+  riskLevel: 'low' | 'moderate' | 'high';
+  score: number;
+}
+
+// Map backend risk level to frontend
+const mapRiskLevel = (level: string): 'low' | 'moderate' | 'high' => {
+  switch (level.toUpperCase()) {
+    case 'LOW':
+      return 'low';
+    case 'MODERATE':
+      return 'moderate';
+    case 'HIGH':
+      return 'high';
+    default:
+      return 'low';
+  }
+};
+
+// Parse blood pressure string
+const parseBloodPressure = (bp: string): { systolic: number; diastolic: number } => {
+  const [systolic, diastolic] = bp.split('/').map(Number);
+  return { systolic: systolic || 0, diastolic: diastolic || 0 };
+};
+
+// Map backend DTO to frontend model
+const mapBackendTestToFrontend = (dto: JendoTestResponseDto): JendoTest => {
+  const bp = parseBloodPressure(dto.bloodPressure);
+  return {
+    id: dto.id.toString(),
+    userId: dto.userId.toString(),
+    userName: dto.userName,
+    testDate: dto.testDate,
+    testTime: dto.testTime,
+    riskLevel: mapRiskLevel(dto.riskLevel),
+    score: dto.score,
+    heartRate: dto.heartRate,
+    bloodPressure: dto.bloodPressure,
+    bloodPressureSystolic: bp.systolic,
+    bloodPressureDiastolic: bp.diastolic,
+    createdAt: dto.createdAt,
+  };
+};
 
 export const jendoTestApi = {
-  getAllTests: async (): Promise<JendoTestSummary[]> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.get<JendoTestSummary[]>(ENDPOINTS.JENDO_TESTS.LIST);
+  // Get all tests with pagination
+  getAllTests: async (page = 0, size = 100): Promise<JendoTest[]> => {
+    try {
+      console.log('=== Fetching all Jendo tests');
+      const response = await httpClient.get<ApiResponse<PaginationResponse<JendoTestResponseDto>>>(
+        `${ENDPOINTS.JENDO_TESTS.LIST}?page=${page}&size=${size}`
+      );
 
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return DUMMY_JENDO_TESTS.map(test => ({ id: test.id, testDate: test.testDate, riskLevel: test.riskLevel, score: test.score }));
+      if (response.data && response.data.content) {
+        return response.data.content.map(mapBackendTestToFrontend);
+      }
+
+      return [];
+    } catch (error: any) {
+      console.error('=== Get all tests error:', error);
+      throw new Error(error.message || 'Failed to fetch Jendo tests');
+    }
   },
 
+  // Get tests by user ID
+  getTestsByUserId: async (userId: number, page = 0, size = 100): Promise<JendoTest[]> => {
+    try {
+      console.log('=== Fetching Jendo tests for user:', userId);
+      const response = await httpClient.get<ApiResponse<PaginationResponse<JendoTestResponseDto>>>(
+        `/jendo-tests/user/${userId}?page=${page}&size=${size}`
+      );
+
+      if (response.data && response.data.content) {
+        return response.data.content.map(mapBackendTestToFrontend);
+      }
+
+      return [];
+    } catch (error: any) {
+      console.error('=== Get user tests error:', error);
+      throw new Error(error.message || 'Failed to fetch user tests');
+    }
+  },
+
+  // Get test by ID
   getTestById: async (id: string): Promise<JendoTest | null> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.get<JendoTest>(ENDPOINTS.JENDO_TESTS.DETAIL(id));
+    try {
+      console.log('=== Fetching Jendo test:', id);
+      const response = await httpClient.get<ApiResponse<JendoTestResponseDto>>(
+        ENDPOINTS.JENDO_TESTS.DETAIL(id)
+      );
 
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return DUMMY_JENDO_TESTS.find(test => test.id === id) || null;
+      if (response.data) {
+        return mapBackendTestToFrontend(response.data);
+      }
+
+      return null;
+    } catch (error: any) {
+      console.error('=== Get test by ID error:', error);
+      throw new Error(error.message || 'Failed to fetch test');
+    }
   },
 
-  getTestsByRiskLevel: async (riskLevel: RiskLevel): Promise<JendoTestSummary[]> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.get<JendoTestSummary[]>(ENDPOINTS.JENDO_TESTS.BY_RISK_LEVEL(riskLevel));
+  // Get tests by date range
+  getTestsByDateRange: async (
+    userId: number,
+    startDate: string,
+    endDate: string
+  ): Promise<JendoTest[]> => {
+    try {
+      console.log('=== Fetching tests by date range:', { userId, startDate, endDate });
+      const response = await httpClient.get<ApiResponse<JendoTestResponseDto[]>>(
+        `/jendo-tests/user/${userId}/date-range?startDate=${startDate}&endDate=${endDate}`
+      );
 
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return DUMMY_JENDO_TESTS
-      .filter(test => test.riskLevel === riskLevel)
-      .map(test => ({ id: test.id, testDate: test.testDate, riskLevel: test.riskLevel, score: test.score }));
+      if (response.data) {
+        return response.data.map(mapBackendTestToFrontend);
+      }
+
+      return [];
+    } catch (error: any) {
+      console.error('=== Get tests by date range error:', error);
+      throw new Error(error.message || 'Failed to fetch tests by date range');
+    }
   },
 
-  getLatestTest: async (): Promise<JendoTest | null> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.get<JendoTest>(ENDPOINTS.JENDO_TESTS.LATEST);
+  // Create new test
+  createTest: async (data: JendoTestRequestDto): Promise<JendoTest> => {
+    try {
+      console.log('=== Creating Jendo test:', data);
+      const response = await httpClient.post<ApiResponse<JendoTestResponseDto>>(
+        ENDPOINTS.JENDO_TESTS.CREATE,
+        data
+      );
 
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return DUMMY_JENDO_TESTS[0] || null;
+      if (response.data) {
+        return mapBackendTestToFrontend(response.data);
+      }
+
+      throw new Error('Failed to create test');
+    } catch (error: any) {
+      console.error('=== Create test error:', error);
+      throw new Error(error.message || 'Failed to create test');
+    }
   },
 
-  createTest: async (data: Partial<JendoTest>): Promise<JendoTest> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.post<JendoTest>(ENDPOINTS.JENDO_TESTS.CREATE, data);
+  // Update test
+  updateTest: async (id: string, data: JendoTestRequestDto): Promise<JendoTest> => {
+    try {
+      console.log('=== Updating Jendo test:', { id, data });
+      const response = await httpClient.put<ApiResponse<JendoTestResponseDto>>(
+        `/jendo-tests/${id}`,
+        data
+      );
 
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const newTest: JendoTest = {
-      id: `test-${Date.now()}`,
-      userId: 'user-001',
-      testDate: new Date().toISOString(),
-      riskLevel: data.riskLevel || 'low',
-      score: data.score || 75,
-      heartRate: data.heartRate || 72,
-      bloodPressureSystolic: data.bloodPressureSystolic || 120,
-      bloodPressureDiastolic: data.bloodPressureDiastolic || 80,
-      analysis: data.analysis || 'Test completed successfully.',
-      suggestions: data.suggestions || ['Continue healthy habits'],
-      createdAt: new Date().toISOString(),
-    };
-    return newTest;
+      if (response.data) {
+        return mapBackendTestToFrontend(response.data);
+      }
+
+      throw new Error('Failed to update test');
+    } catch (error: any) {
+      console.error('=== Update test error:', error);
+      throw new Error(error.message || 'Failed to update test');
+    }
   },
 
-  searchTests: async (query: string): Promise<JendoTestSummary[]> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.get<JendoTestSummary[]>(`${ENDPOINTS.JENDO_TESTS.SEARCH}?q=${encodeURIComponent(query)}`);
-
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const lowercaseQuery = query.toLowerCase();
-    return DUMMY_JENDO_TESTS
-      .filter(test => test.testDate.includes(query) || test.riskLevel.includes(lowercaseQuery) || test.score.toString().includes(query))
-      .map(test => ({ id: test.id, testDate: test.testDate, riskLevel: test.riskLevel, score: test.score }));
+  // Delete test
+  deleteTest: async (id: string): Promise<void> => {
+    try {
+      console.log('=== Deleting Jendo test:', id);
+      await httpClient.delete(`/jendo-tests/${id}`);
+    } catch (error: any) {
+      console.error('=== Delete test error:', error);
+      throw new Error(error.message || 'Failed to delete test');
+    }
   },
 };

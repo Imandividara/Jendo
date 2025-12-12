@@ -44,6 +44,7 @@ export const dashboardStyles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: SPACING.md,
+    paddingBottom: 100, // Extra padding to account for tab bar
   },
   greetingSection: {
     paddingHorizontal: SPACING.md,

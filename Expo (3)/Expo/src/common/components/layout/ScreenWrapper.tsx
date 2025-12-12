@@ -53,7 +53,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   );
 
   if (safeArea) {
-    return <SafeAreaView style={styles.flex}>{wrappedContent}</SafeAreaView>;
+    return <SafeAreaView style={styles.flex} edges={['top']}>{wrappedContent}</SafeAreaView>;
   }
 
   return wrappedContent;
@@ -62,10 +62,10 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   padded: {
     padding: SPACING.md,

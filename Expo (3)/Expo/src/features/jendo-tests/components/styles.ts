@@ -67,7 +67,7 @@ export const jendoStyles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: SPACING.xxl,
+    paddingBottom: 100, // Extra padding to account for tab bar
   },
   testCard: {
     backgroundColor: COLORS.white,
@@ -222,5 +222,41 @@ export const jendoStyles = StyleSheet.create({
   },
   bottomPadding: {
     height: SPACING.xxl,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.xl,
+    minHeight: 400,
+  },
+  loadingText: {
+    marginTop: SPACING.md,
+    fontSize: TYPOGRAPHY.fontSize.md,
+    color: COLORS.textSecondary,
+  },
+  errorTitle: {
+    marginTop: SPACING.md,
+    fontSize: TYPOGRAPHY.fontSize.xl,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  errorText: {
+    marginTop: SPACING.sm,
+    fontSize: TYPOGRAPHY.fontSize.md,
+    color: COLORS.error,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: SPACING.lg,
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+  },
+  retryButtonText: {
+    fontSize: TYPOGRAPHY.fontSize.md,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });
