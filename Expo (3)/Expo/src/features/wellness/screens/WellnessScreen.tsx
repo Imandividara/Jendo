@@ -1,13 +1,27 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { COLORS } from '../../../config/theme.config';
 import { wellnessStyles as styles } from '../components';
+import { useLearningMaterials } from '../../learning/hooks/useLearningMaterials';
+import { LearningMaterial } from '../../learning/types';
+
+const getCategoryColor = (category: string): { bg: string; text: string } => {
+  const colors: Record<string, { bg: string; text: string }> = {
+    'Mental Health': { bg: '#FCE4EC', text: '#E91E63' },
+    'Stress': { bg: '#FCE4EC', text: '#E91E63' },
+    'Nutrition': { bg: '#E8F5E9', text: '#4CAF50' },
+    'Exercise': { bg: '#FFF3E0', text: '#FF9800' },
+    'Cardiology': { bg: '#E3F2FD', text: '#2196F3' },
+  };
+  return colors[category] || { bg: '#F5F5F5', text: '#757575' };
+};
 
 export const WellnessScreen: React.FC = () => {
   const router = useRouter();
+  const { data: learningData, loading: learningLoading } = useLearningMaterials(0, 5);
 
   return (
     <ScreenWrapper safeArea backgroundColor={COLORS.white}>
@@ -179,31 +193,43 @@ export const WellnessScreen: React.FC = () => {
             showsHorizontalScrollIndicator={false}
             style={styles.videosScroll}
           >
-            <View style={styles.videoCard}>
-              <View style={styles.videoThumbnail}>
-                <View style={styles.playButton}>
-                  <Ionicons name="play" size={20} color={COLORS.white} />
-                </View>
-                <View style={styles.videoDuration}>
-                  <Text style={styles.videoDurationText}>5 min</Text>
-                </View>
+            {learningLoading ? (
+              <View style={{ padding: 20 }}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
               </View>
-              <Text style={styles.videoTitle}>Manage Stress with Breathing Techniques</Text>
-              <View style={[styles.videoCategory, { backgroundColor: '#FCE4EC' }]}>
-                <Text style={[styles.videoCategoryText, { color: '#E91E63' }]}>Stress</Text>
+            ) : learningData && learningData.content.length > 0 ? (
+              learningData.content.map((material: LearningMaterial) => {
+                const categoryColor = getCategoryColor(material.category);
+                return (
+                  <TouchableOpacity 
+                    key={material.id}
+                    style={styles.videoCard}
+                    onPress={() => router.push('/wellness/learning')}
+                  >
+                    <View style={[styles.videoThumbnail, { backgroundColor: categoryColor.bg }]}>
+                      <View style={styles.playButton}>
+                        <Ionicons name="play" size={20} color={COLORS.white} />
+                      </View>
+                      <View style={styles.videoDuration}>
+                        <Text style={styles.videoDurationText}>{material.duration}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.videoTitle} numberOfLines={2}>
+                      {material.title}
+                    </Text>
+                    <View style={[styles.videoCategory, { backgroundColor: categoryColor.bg }]}>
+                      <Text style={[styles.videoCategoryText, { color: categoryColor.text }]}>
+                        {material.category}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            ) : (
+              <View style={{ padding: 20 }}>
+                <Text style={{ color: COLORS.textSecondary }}>No materials available</Text>
               </View>
-            </View>
-            <View style={styles.videoCard}>
-              <View style={[styles.videoThumbnail, { backgroundColor: '#E8F5E9' }]}>
-                <View style={styles.playButton}>
-                  <Ionicons name="play" size={20} color={COLORS.white} />
-                </View>
-              </View>
-              <Text style={styles.videoTitle}>Healthy Heart Diet Tips</Text>
-              <View style={[styles.videoCategory, { backgroundColor: '#FFF3E0' }]}>
-                <Text style={[styles.videoCategoryText, { color: '#FF9800' }]}>Exercise</Text>
-              </View>
-            </View>
+            )}
           </ScrollView>
         </View>
 
