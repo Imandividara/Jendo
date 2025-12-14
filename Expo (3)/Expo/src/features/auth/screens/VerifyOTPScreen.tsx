@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { Button } from '../../../common/components/ui';
 import { COLORS } from '../../../config/theme.config';
 import { authStyles as styles } from '../components';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authApi } from '../services/authApi';
+
 
 export const VerifyOTPScreen: React.FC = () => {
   const router = useRouter();
@@ -43,10 +46,28 @@ export const VerifyOTPScreen: React.FC = () => {
 
   const handleVerify = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const otpCode = otp.join('');
+      // Get signup data from AsyncStorage
+      const signupDataStr = await AsyncStorage.getItem('signupData');
+      if (!signupDataStr) throw new Error('Signup data not found');
+      const signupData = JSON.parse(signupDataStr);
+      const email = signupData.email; // <-- Get email here
+
+      // 1. Verify OTP
+      await authApi.verifyOtp({ email, otp: otpCode });
+      // 2. Send signup data to backend
+      await authApi.signup(signupData);
+      // 3. Clear AsyncStorage
+      await AsyncStorage.removeItem('signupData');
       setLoading(false);
+      
       router.replace('/(tabs)');
-    }, 1500);
+    } catch (err) {
+      setLoading(false);
+      const errorMessage = err instanceof Error ? err.message : 'Verification failed';
+      Alert.alert('Error', errorMessage);
+    }
   };
 
   const handleResend = () => {

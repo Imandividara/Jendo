@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { Button, Input } from '../../../common/components/ui';
 import { COLORS } from '../../../config/theme.config';
 import { authStyles as styles } from '../components';
+import { authApi } from '../services/authApi';
 
 export const LoginScreen: React.FC = () => {
   const router = useRouter();
@@ -16,12 +17,15 @@ export const LoginScreen: React.FC = () => {
 
   const handleLogin = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await authApi.login({ email, password });
       setLoading(false);
       router.replace('/(tabs)');
-    }, 1500);
+    } catch (err) {
+      setLoading(false);
+      Alert.alert('Login Failed', err instanceof Error ? err.message : 'Invalid credentials');
+    }
   };
-
   const handleGoogleLogin = () => {
     router.replace('/(tabs)');
   };

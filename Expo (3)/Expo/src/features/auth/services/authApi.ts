@@ -1,6 +1,7 @@
 import { User, UserProfile, LoginCredentials, SignupData, OTPVerification, PasswordResetRequest } from '../../../types/models';
-import { httpClient } from '../../../infrastructure/api';
+import { API_ENDPOINTS, httpClient } from '../../../infrastructure/api';
 import { ENDPOINTS } from '../../../config/api.config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DUMMY_USER: UserProfile = {
   id: 'user-001',
@@ -29,45 +30,24 @@ const DUMMY_USER: UserProfile = {
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<{ user: UserProfile; token: string }> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.post<{ user: UserProfile; token: string }>(ENDPOINTS.AUTH.LOGIN, credentials);
-
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (credentials.email === 'test@example.com' && credentials.password === 'password123') {
-      return { user: DUMMY_USER, token: 'dummy-jwt-token-12345' };
-    }
-    throw new Error('Invalid email or password');
+    const res = await httpClient.post<{ user: UserProfile; token: string }>(ENDPOINTS.AUTH.LOGIN, credentials);
+    // Save JWT token
+    if (res.token) await AsyncStorage.setItem('jwtToken', res.token);
+    return res;
   },
 
-  signup: async (data: SignupData): Promise<{ user: User; message: string }> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.post<{ user: User; message: string }>(ENDPOINTS.AUTH.REGISTER, data);
-
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    return { user: newUser, message: 'Account created successfully. Please verify your email.' };
+  signup: async (data: SignupData) => {
+    const res = await httpClient.post<{ user: UserProfile; token: string }>(API_ENDPOINTS.AUTH.REGISTER, data);
+    if (res.token) await AsyncStorage.setItem('jwtToken', res.token);
+    return res;
   },
 
-  verifyOTP: async (data: OTPVerification): Promise<{ success: boolean; message: string }> => {
-    // REAL API - Uncomment when backend is ready
-    // return httpClient.post<{ success: boolean; message: string }>(ENDPOINTS.AUTH.VERIFY_OTP, data);
+  sendOtp: async (data: { email: string }) => {
+    return httpClient.post(API_ENDPOINTS.AUTH.SEND_OTP, data);
+  },
 
-    // DUMMY DATA - Comment out when connecting to backend
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (data.otp === '123456') {
-      return { success: true, message: 'Email verified successfully' };
-    }
-    throw new Error('Invalid OTP code');
+  verifyOtp: async (data: { email: string, otp: string }) => {
+    return httpClient.post(API_ENDPOINTS.AUTH.VERIFY_OTP, data);
   },
 
   requestPasswordReset: async (data: PasswordResetRequest): Promise<{ success: boolean; message: string }> => {

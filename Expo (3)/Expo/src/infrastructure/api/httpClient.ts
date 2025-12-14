@@ -1,7 +1,15 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../../config/api.config';
-import { storageService } from '../storage';
-import { STORAGE_KEYS } from '../../config/storage.config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const PUBLIC_ENDPOINTS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/send-otp',
+  '/auth/verify-otp',
+  '/auth/request-password-reset',
+  '/auth/reset-password'
+];
 
 class HttpClient {
   private instance: AxiosInstance;
@@ -20,26 +28,21 @@ class HttpClient {
 
   private setupInterceptors(): void {
     this.instance.interceptors.request.use(
-      async (config: InternalAxiosRequestConfig) => {
-        const token = await storageService.getItem(STORAGE_KEYS.AUTH_TOKEN);
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
+      async (config) => {
+        // Only attach token if not a public endpoint
+        const isPublic = PUBLIC_ENDPOINTS.some(path =>
+          config.url?.includes(path)
+        );
+        if (!isPublic) {
+          const token = await AsyncStorage.getItem('jwtToken');
+          if (token) {
+            config.headers = config.headers || {};
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
-    );
-
-    this.instance.interceptors.response.use(
-      (response: AxiosResponse) => response,
-      async (error) => {
-        if (error.response?.status === 401) {
-          await storageService.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-        }
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
   }
 

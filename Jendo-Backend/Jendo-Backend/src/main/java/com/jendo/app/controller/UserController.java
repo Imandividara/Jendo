@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/users")
@@ -56,6 +57,13 @@ public class UserController {
     @Operation(summary = "Get user by email", description = "Retrieves a user by their email address")
     public ResponseEntity<ApiResponse<UserResponseDto>> getUserByEmail(
             @Parameter(description = "User email") @PathVariable String email) {
+        UserResponseDto user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(ApiResponse.success(user));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponseDto>> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
         UserResponseDto user = userService.getUserByEmail(email);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
