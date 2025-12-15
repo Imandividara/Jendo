@@ -8,7 +8,8 @@ const PUBLIC_ENDPOINTS = [
   '/auth/send-otp',
   '/auth/verify-otp',
   '/auth/request-password-reset',
-  '/auth/reset-password'
+  '/auth/reset-password',
+  '/doctors'
 ];
 
 class HttpClient {

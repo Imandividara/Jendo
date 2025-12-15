@@ -20,6 +20,7 @@ import 'react-native-reanimated';
 
 import { ThemeProvider } from '../src/providers/ThemeProvider';
 import { QueryProvider } from '../src/providers/QueryProvider';
+import { AuthProvider } from '../src/providers/AuthProvider';
 import { database } from '../src/infrastructure/database';
 
 SplashScreen.preventAutoHideAsync();
@@ -64,8 +65,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryProvider>
         <ThemeProvider>
-          <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }}>
+          <AuthProvider>
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -100,6 +102,7 @@ export default function RootLayout() {
             <Stack.Screen name="profile/notifications" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
+          </AuthProvider>
         </ThemeProvider>
       </QueryProvider>
     </SafeAreaProvider>

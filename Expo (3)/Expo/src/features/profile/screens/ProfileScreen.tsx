@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScreenWrapper } from '../../../common/components/layout';
 import { COLORS } from '../../../config/theme.config';
 import { profileStyles as styles } from '../components';
+import { useAuth } from '../../../providers/AuthProvider';
 
 const DUMMY_USER = {
   name: 'Sarah Johnson',
@@ -20,9 +22,19 @@ const DUMMY_USER = {
 
 export const ProfileScreen: React.FC = () => {
   const router = useRouter();
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    router.replace('/auth/login');
+  const handleLogout = async () => {
+    try {
+      // Clear JWT token from AsyncStorage
+      await AsyncStorage.removeItem('jwtToken');
+      // Call logout from AuthProvider to clear other auth data
+      await logout();
+      // Navigate to login screen
+      router.replace('/auth/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (
