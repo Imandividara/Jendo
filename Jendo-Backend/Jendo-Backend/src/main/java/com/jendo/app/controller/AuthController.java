@@ -71,8 +71,9 @@ public class AuthController {
         String password = req.get("password");
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-            String token = jwtUtil.generateToken(email);
-            return ResponseEntity.ok(Map.of("token", token));
+            var user = userService.getUserByEmail(email);
+            String token = jwtUtil.generateToken(email, user.getId());
+            return ResponseEntity.ok(Map.of("token", token, "userId", user.getId()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid credentials"));
         }
@@ -80,9 +81,9 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody UserRequestDto req) {
-        userService.createUser(req);
-        String token = jwtUtil.generateToken(req.getEmail());
-        return ResponseEntity.ok(Map.of("token", token));
+        var createdUser = userService.createUser(req);
+        String token = jwtUtil.generateToken(createdUser.getEmail(), createdUser.getId());
+        return ResponseEntity.ok(Map.of("token", token, "userId", createdUser.getId()));
     }
 
 
